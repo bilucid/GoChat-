@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Salon – Messagerie en direct</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ---------- Thème classique ---------- */
+body{--bg:#eef2f1;--panel:#fff;--ink:#16211f;--muted:#6b7a77;--line:#d9e1df;--accent:#0f766e;--accent-ink:#fff;--mine:#0f766e;--mine-ink:#fff;--theirs:#e6ecea;--field:#eef2f1;--danger:#b42318}
+@media (prefers-color-scheme:dark){body[data-theme="classic"]{--bg:#0e1514;--panel:#151e1d;--ink:#e7efed;--muted:#8fa09c;--line:#26332f;--accent:#2dd4bf;--accent-ink:#04201c;--mine:#14b8a6;--mine-ink:#04201c;--theirs:#202c2a;--field:#0e1514;--danger:#f97066}}
+/* ---------- Thème Liquid Glass ---------- */
+body[data-theme="glass"]{--bg:#0a0f2c;--panel:rgba(255,255,255,.12);--ink:#fff;--muted:rgba(255,255,255,.72);--line:rgba(255,255,255,.24);--accent:rgba(255,255,255,.92);--accent-ink:#0a1a40;--mine:linear-gradient(135deg,rgba(96,165,250,.85),rgba(168,85,247,.8));--mine-ink:#fff;--theirs:rgba(255,255,255,.16);--field:rgba(255,255,255,.14);--danger:#ffb4ab}
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:Figtree,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);display:flex;justify-content:center;overflow:hidden;transition:background .5s,color .5s}
+button{font:inherit;cursor:pointer;border:0;color:inherit}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Fond animé (visible seulement en Glass) */
+.bg{position:fixed;inset:0;overflow:hidden;opacity:0;transition:opacity .6s;pointer-events:none}
+body[data-theme="glass"] .bg{opacity:1}
+.blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:.85;animation:float 18s ease-in-out infinite alternate}
+.b1{width:46vmax;height:46vmax;background:#4f7cff;top:-12vmax;left:-10vmax}
+.b2{width:40vmax;height:40vmax;background:#ff5fa2;bottom:-14vmax;right:-8vmax;animation-delay:-6s}
+.b3{width:32vmax;height:32vmax;background:#2dd4bf;top:30%;left:45%;animation-delay:-11s}
+.b4{width:26vmax;height:26vmax;background:#ffb347;bottom:8%;left:-6vmax;animation-delay:-3s;opacity:.6}
+@keyframes float{to{transform:translate(8vmax,-6vmax) scale(1.18)}}
+
+.app{position:relative;width:100%;max-width:760px;height:100%;display:flex;flex-direction:column;background:var(--panel);border-inline:1px solid var(--line);transition:all .5s cubic-bezier(.2,.8,.2,1);isolation:isolate}
+body[data-theme="glass"] .app{height:calc(100% - 28px);margin:14px;width:calc(100% - 28px);border-radius:34px;border:1px solid var(--line);
+  -webkit-backdrop-filter:blur(30px) saturate(190%);backdrop-filter:blur(30px) saturate(190%);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(255,255,255,.12),inset 0 0 40px rgba(255,255,255,.06),0 30px 80px rgba(0,0,0,.35);overflow:hidden}
+/* reflet qui suit le pointeur */
+body[data-theme="glass"] .app::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%),rgba(255,255,255,.2),transparent 62%),linear-gradient(135deg,rgba(255,255,255,.22),transparent 30%,transparent 70%,rgba(255,255,255,.08))}
+
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px}
+.dot{width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 9px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+h1{font-size:1.15rem;margin:0}
+small{display:block;color:var(--muted);font-size:.78rem}
+.actions{display:flex;align-items:center;gap:8px}
+.chip{background:var(--field);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:.85rem;transition:transform .15s,background .2s}
+.chip:hover{transform:translateY(-1px)}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
+#avatar{width:32px;height:32px;border-radius:50%;border:1px solid var(--line)}
+.who{display:flex;align-items:center;gap:8px}
+
+#login{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:24px}
+#login h2{margin:0;font-size:1.7rem}
+#login p{margin:0;color:var(--muted);max-width:34ch}
+.cta{background:var(--accent);color:var(--accent-ink);font-weight:700;padding:13px 24px;border-radius:999px;transition:transform .2s,box-shadow .2s}
+.cta:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 10px 30px rgba(0,0,0,.25)}
+
+#chat{flex:1;display:none;flex-direction:column;min-height:0;position:relative}
+#messages{flex:1;overflow-y:auto;padding:18px 18px 8px;display:flex;flex-direction:column;scroll-behavior:smooth}
+.empty{margin:auto;color:var(--muted);text-align:center}
+.sep{align-self:center;font-size:.75rem;color:var(--muted);background:var(--field);border:1px solid var(--line);padding:3px 12px;border-radius:999px;margin:14px 0 6px}
+.row{display:flex;gap:9px;max-width:82%;margin-top:3px}
+.row.first{margin-top:12px}
+.row.mine{align-self:flex-end;flex-direction:row-reverse}
+.av{width:32px;height:32px;flex:none;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.85rem;color:#fff;object-fit:cover}
+.spacer{width:32px;flex:none}
+.col{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.mine .col{align-items:flex-end}
+.meta{font-size:.74rem;color:var(--muted);margin:0 6px 3px}
+.bubble{background:var(--theirs);padding:9px 14px;border-radius:20px;line-height:1.4;overflow-wrap:anywhere;white-space:pre-wrap}
+.mine .bubble{background:var(--mine);color:var(--mine-ink)}
+body[data-theme="glass"] .bubble{border:1px solid var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.35);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.pop{animation:pop .45s cubic-bezier(.2,1.4,.4,1)}
+.mine.pop{transform-origin:100% 100%}.row:not(.mine).pop{transform-origin:0 100%}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.85)}}
+.del{background:none;font-size:.72rem;color:var(--muted);padding:2px 6px;opacity:0;transition:opacity .2s}
+.row:hover .del,.del:focus-visible{opacity:1}
+.del:hover{color:var(--danger)}
+@media (hover:none){.del{opacity:.8}}
+
+#typing{height:22px;padding:0 22px;font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+#typing i{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--muted);animation:bounce 1s infinite}
+#typing i:nth-child(3){animation-delay:.15s}#typing i:nth-child(4){animation-delay:.3s}
+@keyframes bounce{40%{transform:translateY(-4px)}}
+#jump{position:absolute;right:18px;bottom:84px;background:var(--accent);color:var(--accent-ink);font-weight:700;border-radius:999px;padding:8px 14px;font-size:.82rem;box-shadow:0 8px 24px rgba(0,0,0,.3);display:none;animation:pop .3s}
+#err{color:var(--danger);font-size:.85rem;padding:0 22px 6px;display:none}
+#emojis{display:none;gap:4px;padding:0 14px 6px;flex-wrap:wrap}
+#emojis button{background:none;font-size:1.3rem;padding:4px 6px;border-radius:10px;transition:transform .15s}
+#emojis button:hover{transform:scale(1.3)}
+form{display:flex;gap:8px;align-items:center;padding:10px 14px 14px}
+body[data-theme="glass"] form{margin:0 10px 10px;padding:7px;border-radius:999px;background:var(--field);border:1px solid var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+input{flex:1;min-width:0;font:inherit;padding:11px 14px;border-radius:999px;border:1px solid var(--line);background:var(--field);color:var(--ink)}
+body[data-theme="glass"] input{background:transparent;border:0}
+body[data-theme="glass"] input::placeholder{color:var(--muted)}
+.round{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);flex:none;transition:transform .2s}
+.round:hover{transform:scale(1.1) rotate(-8deg)}
+.round:active{transform:scale(.9)}
+.round.soft{background:transparent;font-size:1.25rem}
+@media (max-width:520px){#name{display:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body data-theme="glass">
+<div class="bg" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div></div>
+
+<div class="app" id="app">
+  <header>
+    <div class="brand"><span class="dot"></span><div><h1>Salon</h1><small>Messagerie en direct</small></div></div>
+    <div class="actions">
+      <button class="chip" id="themeBtn" type="button" aria-pressed="true">Liquid Glass</button>
+      <div class="who" id="who" hidden>
+        <img id="avatar" alt="" referrerpolicy="no-referrer">
+        <button class="chip" id="logout" type="button">Quitter</button>
+      </div>
+    </div>
+  </header>
+
+  <section id="login">
+    <h2>Rejoins la conversation</h2>
+    <p>Connecte-toi avec Google pour lire et envoyer des messages.</p>
+    <button class="cta" id="loginBtn" type="button">Se connecter avec Google</button>
+  </section>
+
+  <section id="chat">
+    <div id="messages" aria-live="polite"></div>
+    <button id="jump" type="button">Nouveaux messages ↓</button>
+    <div id="typing" aria-live="polite"></div>
+    <div id="err" role="alert"></div>
+    <div id="emojis"></div>
+    <form id="form" autocomplete="off">
+      <button class="round soft" id="emojiBtn" type="button" aria-label="Emojis">😊</button>
+      <input id="input" type="text" maxlength="500" placeholder="Écris un message" aria-label="Message" required>
+      <button class="round" type="submit" aria-label="Envoyer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      </button>
+    </form>
+  </section>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, addDoc, setDoc, deleteDoc, doc, query, orderBy, limit, onSnapshot, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ====== COLLE ICI TA CONFIG FIREBASE ====== */
+const firebaseConfig = {
+  apiKey: "AIzaSyC3HV7LZ8a2KSXfdULaIbeyU0iu1ca5dqM",
+  authDomain: "gochat-e33c2.firebaseapp.com",
+  projectId: "gochat-e33c2",
+  storageBucket: "gochat-e33c2.firebasestorage.app",
+  messagingSenderId: "130631879414",
+  appId: "1:130631879414:web:d0ec283ec3be069025bad7"
+};
+/* ========================================== */
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app), db = getFirestore(app);
+const $ = id => document.getElementById(id);
+const box = $("messages");
+let unsubs = [], seen = null, unread = 0, typers = [];
+
+/* ---------- Thème ---------- */
+function setTheme(t) {
+  document.body.dataset.theme = t;
+  $("themeBtn").setAttribute("aria-pressed", String(t === "glass"));
+  try { localStorage.setItem("salon-theme", t); } catch {}
+}
+let saved = null; try { saved = localStorage.getItem("salon-theme"); } catch {}
+setTheme(saved === "classic" ? "classic" : "glass");
+$("themeBtn").onclick = () => setTheme(document.body.dataset.theme === "glass" ? "classic" : "glass");
+$("app").addEventListener("pointermove", e => {
+  const r = e.currentTarget.getBoundingClientRect();
+  e.currentTarget.style.setProperty("--mx", (e.clientX - r.left) + "px");
+  e.currentTarget.style.setProperty("--my", (e.clientY - r.top) + "px");
+});
+
+/* ---------- Emojis ---------- */
+const em = $("emojis");
+["😀","😂","😍","👍","🔥","🎉","😮","🙏","❤️","😭"].forEach(e => {
+  const b = document.createElement("button"); b.type = "button"; b.textContent = e;
+  b.onclick = () => { $("input").value += e; $("input").focus(); };
+  em.append(b);
+});
+$("emojiBtn").onclick = () => { em.style.display = em.style.display === "flex" ? "none" : "flex"; };
+
+/* ---------- Auth ---------- */
+const showErr = m => { $("err").textContent = m; $("err").style.display = m ? "block" : "none"; };
+$("loginBtn").onclick = () => signInWithPopup(auth, new GoogleAuthProvider()).catch(e => showErr("Connexion impossible : " + e.code));
+$("logout").onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, user => {
+  unsubs.forEach(u => u()); unsubs = []; seen = null; unread = 0;
+  $("login").style.display = user ? "none" : "flex";
+  $("chat").style.display = user ? "flex" : "none";
+  $("who").hidden = !user;
+  if (!user) return;
+  $("avatar").src = user.photoURL || "";
+  listenMessages(user); listenTyping(user);
+});
+
+/* ---------- Messages ---------- */
+const nearBottom = () => box.scrollHeight - box.scrollTop - box.clientHeight < 140;
+const sameDay = (a, b) => a.toDateString() === b.toDateString();
+function dayLabel(d) {
+  const t = new Date(), y = new Date(Date.now() - 864e5);
+  if (sameDay(d, t)) return "Aujourd’hui";
+  if (sameDay(d, y)) return "Hier";
+  return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+}
+function avatar(m) {
+  if (m.photo) { const i = document.createElement("img"); i.className = "av"; i.src = m.photo; i.alt = ""; i.referrerPolicy = "no-referrer"; return i; }
+  const d = document.createElement("div"); d.className = "av";
+  const name = m.name || "?"; let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) % 360;
+  d.style.background = `hsl(${h} 60% 45%)`; d.textContent = name[0].toUpperCase(); return d;
+}
+
+function listenMessages(user) {
+  const q = query(collection(db, "messages"), orderBy("createdAt", "asc"), limit(150));
+  unsubs.push(onSnapshot(q, snap => {
+    const wasNear = nearBottom(), prevTop = box.scrollTop, first = seen === null;
+    const newIds = new Set(first ? [] : snap.docs.filter(d => !seen.has(d.id)).map(d => d.id));
+    const lastNew = snap.docs.filter(d => newIds.has(d.id)).map(d => d.data());
+    const fromOthers = lastNew.filter(m => m.uid !== user.uid).length;
+    const fromMe = lastNew.some(m => m.uid === user.uid);
+
+    box.style.scrollBehavior = "auto";
+    box.replaceChildren();
+    if (snap.empty) { const p = document.createElement("p"); p.className = "empty"; p.textContent = "Aucun message pour l’instant. Écris le premier !"; box.append(p); }
+    let prev = null;
+    snap.docs.forEach(d => {
+      const m = d.data({ serverTimestamps: "estimate" });
+      const date = m.createdAt ? m.createdAt.toDate() : new Date();
+      const newDay = !prev || !sameDay(prev.date, date);
+      if (newDay) { const s = document.createElement("div"); s.className = "sep"; s.textContent = dayLabel(date); box.append(s); }
+      const mine = m.uid === user.uid;
+      const head = newDay || prev.uid !== m.uid || date - prev.date > 300000;
+      const row = document.createElement("div");
+      row.className = "row" + (mine ? " mine" : "") + (head ? " first" : "") + (newIds.has(d.id) ? " pop" : "");
+      if (!mine) row.append(head ? avatar(m) : Object.assign(document.createElement("div"), { className: "spacer" }));
+      const col = document.createElement("div"); col.className = "col";
+      if (head) {
+        const meta = document.createElement("div"); meta.className = "meta";
+        meta.textContent = (mine ? "Moi" : m.name) + " · " + date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+        col.append(meta);
+      }
+      const b = document.createElement("div"); b.className = "bubble"; b.textContent = m.text; col.append(b);
+      if (mine) {
+        const del = document.createElement("button"); del.className = "del"; del.type = "button"; del.textContent = "Supprimer";
+        del.onclick = () => deleteDoc(doc(db, "messages", d.id)).catch(e => showErr("Suppression impossible : " + e.code));
+        col.append(del);
+      }
+      row.append(col); box.append(row);
+      prev = { uid: m.uid, date };
+    });
+    seen = new Set(snap.docs.map(d => d.id));
+
+    if (first || fromMe || wasNear) { box.scrollTop = box.scrollHeight; unread = 0; $("jump").style.display = "none"; }
+    else { box.scrollTop = prevTop; unread += fromOthers; if (unread) { $("jump").textContent = unread + " nouveau" + (unread > 1 ? "x" : "") + " message" + (unread > 1 ? "s" : "") + " ↓"; $("jump").style.display = "block"; } }
+    box.style.scrollBehavior = "smooth";
+  }, err => showErr("Lecture impossible : " + err.code)));
+}
+box.addEventListener("scroll", () => { if (nearBottom()) { unread = 0; $("jump").style.display = "none"; } });
+$("jump").onclick = () => { box.scrollTop = box.scrollHeight; };
+
+/* ---------- « En train d’écrire » ---------- */
+function listenTyping(user) {
+  unsubs.push(onSnapshot(collection(db, "typing"), s => { typers = s.docs.map(d => ({ uid: d.id, ...d.data() })); showTyping(); }, () => {}));
+  const t = setInterval(showTyping, 1500); unsubs.push(() => clearInterval(t));
+}
+function showTyping() {
+  const me = auth.currentUser; if (!me) return;
+  const names = typers.filter(t => t.uid !== me.uid && Date.now() - t.at < 5000).map(t => (t.name || "Quelqu’un").split(" ")[0]);
+  const el = $("typing"); el.replaceChildren();
+  if (!names.length) return;
+  el.append(names.join(", ") + (names.length > 1 ? " écrivent" : " écrit"));
+  for (let i = 0; i < 3; i++) el.append(document.createElement("i"));
+}
+let lastTyping = 0;
+$("input").addEventListener("input", () => {
+  const u = auth.currentUser; if (!u || Date.now() - lastTyping < 2000) return;
+  lastTyping = Date.now();
+  setDoc(doc(db, "typing", u.uid), { name: u.displayName || "Quelqu’un", at: Date.now() }).catch(() => {});
+});
+
+/* ---------- Envoi ---------- */
+$("form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const text = $("input").value.trim(), u = auth.currentUser;
+  if (!text || !u) return;
+  $("input").value = ""; showErr(""); em.style.display = "none"; lastTyping = 0;
+  deleteDoc(doc(db, "typing", u.uid)).catch(() => {});
+  try {
+    await addDoc(collection(db, "messages"), { text, uid: u.uid, name: u.displayName || "Anonyme", photo: u.photoURL || "", createdAt: serverTimestamp() });
+  } catch (err) { showErr("Envoi impossible : " + err.code); }
+});
+</script>
+</body>
+</html>
