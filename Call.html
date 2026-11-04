@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Appels – Salon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+body{--bg:#eef2f1;--panel:#fff;--ink:#16211f;--muted:#6b7a77;--line:#d9e1df;--accent:#0f766e;--accent-ink:#fff;--field:#eef2f1;--danger:#b42318;--ok:#16a34a;--bad:#dc2626}
+@media (prefers-color-scheme:dark){body[data-theme="classic"]{--bg:#0e1514;--panel:#151e1d;--ink:#e7efed;--muted:#8fa09c;--line:#26332f;--accent:#2dd4bf;--accent-ink:#04201c;--field:#0e1514;--danger:#f97066}}
+body[data-theme="glass"]{--bg:#0a0f2c;--panel:rgba(255,255,255,.12);--ink:#fff;--muted:rgba(255,255,255,.72);--line:rgba(255,255,255,.24);--accent:rgba(255,255,255,.92);--accent-ink:#0a1a40;--field:rgba(255,255,255,.14);--danger:#ffb4ab}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:Figtree,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);display:flex;justify-content:center;overflow:hidden}
+button,select{font:inherit;cursor:pointer;border:0;color:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+.bg{position:fixed;inset:0;overflow:hidden;opacity:0;transition:opacity .6s;pointer-events:none}
+body[data-theme="glass"] .bg{opacity:1}
+.blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:.85;animation:float 18s ease-in-out infinite alternate}
+.b1{width:46vmax;height:46vmax;background:#4f7cff;top:-12vmax;left:-10vmax}
+.b2{width:40vmax;height:40vmax;background:#ff5fa2;bottom:-14vmax;right:-8vmax;animation-delay:-6s}
+.b3{width:32vmax;height:32vmax;background:#2dd4bf;top:30%;left:45%;animation-delay:-11s}
+@keyframes float{to{transform:translate(8vmax,-6vmax) scale(1.18)}}
+.app{position:relative;width:100%;max-width:520px;height:100%;display:flex;flex-direction:column;background:var(--panel);border-inline:1px solid var(--line);isolation:isolate;overflow:hidden}
+body[data-theme="glass"] .app{height:calc(100% - 28px);margin:14px;width:calc(100% - 28px);border-radius:34px;border:1px solid var(--line);-webkit-backdrop-filter:blur(30px) saturate(190%);backdrop-filter:blur(30px) saturate(190%);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.55),inset 0 0 40px rgba(255,255,255,.06),0 30px 80px rgba(0,0,0,.35)}
+body[data-theme="glass"] .app::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%),rgba(255,255,255,.2),transparent 62%),linear-gradient(135deg,rgba(255,255,255,.22),transparent 30%,transparent 70%,rgba(255,255,255,.08))}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 16px;border-bottom:1px solid var(--line)}
+h1{font-size:1.15rem;margin:0}
+.chip{display:inline-block;background:var(--field);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:.85rem;text-decoration:none;color:inherit;white-space:nowrap;transition:transform .15s}
+.chip:hover{transform:translateY(-1px)}
+.actions{display:flex;gap:8px}
+main{flex:1;overflow-y:auto;padding:22px 20px;display:flex;flex-direction:column;gap:14px}
+h2{margin:0;font-size:1.5rem}
+p{margin:0;color:var(--muted);font-size:.92rem}
+input,select{width:100%;font:inherit;padding:12px 16px;border-radius:999px;border:1px solid var(--line);background:var(--field);color:var(--ink)}
+select option{color:#111}
+body[data-theme="glass"] input::placeholder{color:var(--muted)}
+.cta{background:var(--accent);color:var(--accent-ink);font-weight:700;padding:13px 22px;border-radius:999px;transition:transform .2s,box-shadow .2s}
+.cta:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.cta.alt{background:var(--field);color:var(--ink);border:1px solid var(--line)}
+.line{display:flex;gap:8px}.line input{flex:1}
+.me{display:flex;align-items:center;gap:10px;font-weight:700}
+.dot{width:10px;height:10px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.6)}70%{box-shadow:0 0 0 9px rgba(34,197,94,0)}}
+.recent{display:flex;gap:8px;flex-wrap:wrap}
+details{background:var(--field);border:1px solid var(--line);border-radius:20px;padding:12px 16px}
+summary{cursor:pointer;font-weight:700}
+details .in{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+input[type=range]{padding:0;border:0;background:none;accent-color:var(--accent)}
+.hint{font-size:.78rem;color:var(--muted)}
+#msg{min-height:1.2em;color:var(--danger);font-size:.88rem}
+
+#screen{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:60px 24px 48px;background:linear-gradient(180deg,rgba(15,23,42,.78),rgba(15,23,42,.92));color:#fff;animation:fade .3s}
+body[data-theme="classic"] #screen{background:#0f172a}
+@keyframes fade{from{opacity:0}}
+.who{text-align:center}
+.ava{position:relative;width:120px;height:120px;border-radius:50%;margin:0 auto 20px;display:grid;place-items:center;font-size:3rem;font-weight:700;background:linear-gradient(135deg,#60a5fa,#a855f7)}
+.ava.ring::before,.ava.ring::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid rgba(255,255,255,.6);animation:ripple 1.8s infinite}
+.ava.ring::after{animation-delay:.9s}
+@keyframes ripple{to{transform:scale(1.9);opacity:0}}
+#cname{font-size:1.6rem;font-weight:700}
+#cstat{color:rgba(255,255,255,.75);margin-top:6px}
+.btns{display:flex;gap:28px;align-items:center}
+.big{width:68px;height:68px;border-radius:50%;display:grid;place-items:center;font-size:1.6rem;color:#fff;transition:transform .15s}
+.big:hover{transform:scale(1.08)}.big:active{transform:scale(.92)}
+.big.ok{background:var(--ok);animation:shake 1.2s infinite}.big.no{background:var(--bad)}.big.mute{background:rgba(255,255,255,.2)}
+.big.mute[aria-pressed="true"]{background:#fff;color:#111}
+@keyframes shake{0%,60%,100%{transform:rotate(0)}10%,30%,50%{transform:rotate(-12deg)}20%,40%{transform:rotate(12deg)}}
+#toast{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);background:#111c;color:#fff;padding:10px 18px;border-radius:999px;font-size:.88rem;z-index:9}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body data-theme="glass">
+<div class="bg" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+<audio id="remote" autoplay playsinline></audio>
+
+<div class="app" id="app">
+  <header>
+    <h1>📞 Appels</h1>
+    <div class="actions"><a class="chip" href="index.html">← Chat</a><button class="chip" id="themeBtn" type="button">Thème</button></div>
+  </header>
+
+  <main>
+    <section id="login" style="display:flex;flex-direction:column;gap:12px">
+      <h2>Qui es-tu ?</h2>
+      <p>Choisis un pseudo : les autres t’appelleront avec. Garde cette page ouverte pour recevoir des appels.</p>
+      <input id="pseudo" placeholder="Ton pseudo (3 à 20 caractères)" maxlength="20" autocomplete="username">
+      <button class="cta" id="connect" type="button">Se connecter</button>
+    </section>
+
+    <section id="home" hidden style="display:flex;flex-direction:column;gap:12px">
+      <div class="me"><span class="dot"></span><span id="meName"></span><span class="hint">en ligne</span></div>
+      <h2>Appeler quelqu’un</h2>
+      <div class="line"><input id="target" placeholder="Pseudo à appeler" maxlength="20"><button class="cta" id="callBtn" type="button">Appeler</button></div>
+      <div class="recent" id="recent"></div>
+    </section>
+
+    <div id="msg" role="alert"></div>
+
+    <details id="ringBox">
+      <summary>🔔 Ma sonnerie</summary>
+      <div class="in">
+        <select id="ringSel" aria-label="Sonnerie">
+          <option value="classic">Classique</option>
+          <option value="crystal">Cristal</option>
+          <option value="retro">Rétro</option>
+          <option value="custom">Mon fichier audio</option>
+          <option value="repo">ringtone.mp3 (fichier du dépôt)</option>
+        </select>
+        <label class="hint" for="vol">Volume</label>
+        <input id="vol" type="range" min="0.1" max="1" step="0.05" value="0.8">
+        <div class="line"><button class="cta alt" id="ringTest" type="button" style="flex:1">▶ Écouter</button>
+          <button class="cta alt" id="ringPick" type="button" style="flex:1">Choisir un fichier…</button></div>
+        <input id="ringFile" type="file" accept="audio/*" hidden>
+        <span class="hint" id="ringInfo"></span>
+      </div>
+    </details>
+  </main>
+
+  <div id="screen" hidden>
+    <div class="who"><div class="ava" id="ava">?</div><div id="cname"></div><div id="cstat"></div></div>
+    <div class="btns" id="cbtns"></div>
+  </div>
+  <div id="toast" hidden></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+/* ============ RÉGLAGES ============ */
+// Change cette valeur par un texte unique à toi : il isole tes utilisateurs des autres apps du serveur public.
+const NS = "salon-chat-v1";
+// Serveurs STUN gratuits (suffisant dans la majorité des cas). Pour les réseaux stricts (4G, entreprise), ajoute un serveur TURN :
+const ICE = [
+  { urls: "stun:stun.l.google.com:19302" },
+  { urls: "stun:stun1.l.google.com:19302" }
+  // , { urls: "turn:TON-SERVEUR-TURN:443", username: "xxx", credential: "yyy" }
+];
+/* ================================== */
+
+const $ = id => document.getElementById(id);
+const ls = { get: (k, d) => { try { return localStorage.getItem(k) ?? d; } catch { return d; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} } };
+document.body.dataset.theme = ls.get("salon-theme", "glass") === "classic" ? "classic" : "glass";
+$("themeBtn").onclick = () => { const t = document.body.dataset.theme === "glass" ? "classic" : "glass"; document.body.dataset.theme = t; ls.set("salon-theme", t); };
+$("app").addEventListener("pointermove", e => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty("--mx", e.clientX - r.left + "px"); e.currentTarget.style.setProperty("--my", e.clientY - r.top + "px"); });
+const say = m => { $("msg").textContent = m || ""; };
+let toastT; const toast = m => { const t = $("toast"); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 3500); };
+
+/* ---------- Audio / sonneries ---------- */
+let ctx; const audio = () => (ctx ||= new (window.AudioContext || window.webkitAudioContext)());
+document.addEventListener("pointerdown", () => { if (ctx && ctx.state !== "running") ctx.resume(); });
+
+function note(dest, f, t, d, type = "sine", g = .5) {
+  const c = audio(), o = c.createOscillator(), e = c.createGain();
+  o.type = type; o.frequency.value = f;
+  e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(g, t + .015); e.gain.exponentialRampToValueAtTime(.0001, t + d);
+  o.connect(e).connect(dest); o.start(t); o.stop(t + d + .05);
+}
+const PATTERNS = {
+  classic:  { period: 3,   play: (d, t) => [0, .55].forEach(o => { note(d, 440, t + o, .45, "sine", .4); note(d, 480, t + o, .45, "sine", .4); }) },
+  crystal:  { period: 2.4, play: (d, t) => [1047, 1319, 1568, 2093, 1568, 1319].forEach((f, i) => note(d, f, t + i * .15, .9, "sine", .3)) },
+  retro:    { period: 1.7, play: (d, t) => [0, .2, .4].forEach(o => note(d, 880, t + o, .13, "square", .16)) },
+  ringback: { period: 4,   play: (d, t) => note(d, 425, t, 1.2, "sine", .14) }
+};
+const bufCache = {};
+async function getBuffer(kind) {
+  if (bufCache[kind]) return bufCache[kind];
+  let ab;
+  if (kind === "custom") { const rec = await kvGet("ringtone"); if (!rec) return null; ab = rec.data; }
+  else { const r = await fetch("ringtone.mp3"); if (!r.ok) return null; ab = await r.arrayBuffer(); }
+  return (bufCache[kind] = await audio().decodeAudioData(ab.slice(0)));
+}
+async function playRing(kind, vol) {
+  const c = audio(); await c.resume();
+  const master = c.createGain(); master.gain.value = vol; master.connect(c.destination);
+  let stopper;
+  let buf = null; if (kind === "custom" || kind === "repo") { try { buf = await getBuffer(kind); } catch {} if (!buf) kind = "classic"; }
+  if (buf) { const s = c.createBufferSource(); s.buffer = buf; s.loop = true; s.connect(master); s.start(); stopper = () => s.stop(c.currentTime + .1); }
+  else { const p = PATTERNS[kind] || PATTERNS.classic, go = () => p.play(master, c.currentTime + .05); go(); const id = setInterval(go, p.period * 1000); stopper = () => clearInterval(id); }
+  return () => { try { stopper(); } catch {} master.gain.setTargetAtTime(0, c.currentTime, .04); setTimeout(() => master.disconnect(), 400); };
+}
+
+/* IndexedDB : stocke ton fichier de sonnerie sur cet appareil */
+const idb = () => new Promise((ok, ko) => { const r = indexedDB.open("salon-call", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); });
+async function kvSet(k, v) { const d = await idb(); return new Promise((ok, ko) => { const t = d.transaction("kv", "readwrite"); t.objectStore("kv").put(v, k); t.oncomplete = ok; t.onerror = () => ko(t.error); }); }
+async function kvGet(k) { try { const d = await idb(); return await new Promise((ok, ko) => { const q = d.transaction("kv").objectStore("kv").get(k); q.onsuccess = () => ok(q.result); q.onerror = () => ko(q.error); }); } catch { return null; } }
+
+/* Réglages de sonnerie */
+$("ringSel").value = ls.get("call-ring", "classic");
+$("vol").value = ls.get("call-vol", "0.8");
+const ringInfo = m => $("ringInfo").textContent = m || "";
+kvGet("ringtone").then(r => { if (r) ringInfo("Fichier perso : " + r.name); });
+$("ringSel").onchange = () => { ls.set("call-ring", $("ringSel").value); if ($("ringSel").value === "custom") kvGet("ringtone").then(r => { if (!r) $("ringFile").click(); }); };
+$("vol").oninput = () => ls.set("call-vol", $("vol").value);
+$("ringPick").onclick = () => $("ringFile").click();
+$("ringFile").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  if (f.size > 6 * 1024 * 1024) return ringInfo("Fichier trop gros (6 Mo maximum).");
+  try {
+    const data = await f.arrayBuffer(); await audio().decodeAudioData(data.slice(0));
+    await kvSet("ringtone", { name: f.name, data }); delete bufCache.custom;
+    $("ringSel").value = "custom"; ls.set("call-ring", "custom"); ringInfo("Fichier perso : " + f.name);
+  } catch { ringInfo("Impossible de lire ce fichier audio."); }
+};
+let testStop = null;
+$("ringTest").onclick = async () => {
+  if (testStop) { testStop(); testStop = null; $("ringTest").textContent = "▶ Écouter"; return; }
+  $("ringTest").textContent = "■ Arrêter";
+  testStop = await playRing($("ringSel").value, +$("vol").value);
+  setTimeout(() => { if (testStop) $("ringTest").click(); }, 8000);
+};
+
+let ringStop = null, vibId = null, titleId = null;
+async function startRing(kind) {
+  stopRing();
+  const stop = await playRing(kind === "in" ? $("ringSel").value : "ringback", kind === "in" ? +$("vol").value : .6);
+  if (!S) return stop();           // l'appel s'est terminé entre-temps
+  ringStop = stop;
+  if (kind === "in") {
+    if (navigator.vibrate) { const v = () => navigator.vibrate([500, 250, 500]); v(); vibId = setInterval(v, 2500); }
+    const base = document.title; let on = false;
+    titleId = setInterval(() => { document.title = (on = !on) ? "📞 Appel de " + (S ? S.name : "") : base; }, 800);
+  }
+}
+function stopRing() {
+  if (ringStop) { ringStop(); ringStop = null; }
+  if (vibId) { clearInterval(vibId); vibId = null; navigator.vibrate && navigator.vibrate(0); }
+  if (titleId) { clearInterval(titleId); titleId = null; document.title = "Appels – Salon"; }
+}
+
+/* ---------- Connexion au serveur PeerJS ---------- */
+let peer = null, me = "";
+const idOf = p => NS + "-" + p.toLowerCase();
+const okPseudo = p => /^[A-Za-z0-9]+([-_][A-Za-z0-9]+)*$/.test(p) && p.length >= 3 && p.length <= 20;
+$("pseudo").value = ls.get("call-pseudo", "");
+$("connect").onclick = () => {
+  const p = $("pseudo").value.trim();
+  if (!okPseudo(p)) return say("Pseudo : 3 à 20 caractères (lettres, chiffres, - et _).");
+  audio().resume(); say(""); $("connect").disabled = true; $("connect").textContent = "Connexion…";
+  me = p; ls.set("call-pseudo", p);
+  peer = new Peer(idOf(p), { debug: 1, config: { iceServers: ICE } });
+  peer.on("open", () => {
+    $("login").hidden = true; $("login").style.display = "none";
+    $("home").hidden = false; $("home").style.display = "flex"; $("meName").textContent = p; renderRecent();
+  });
+  peer.on("connection", conn => {
+    conn.on("data", d => {
+      if (d && d.t === "ring") {
+        if (S) { conn.send({ t: "busy" }); setTimeout(() => conn.close(), 300); return; }
+        S = { role: "in", conn, name: String(d.name || "Inconnu").slice(0, 30), state: "ring" };
+        show("in"); startRing("in");
+      } else if (S && S.conn === conn) onData(d);
+    });
+    conn.on("close", () => { if (S && S.conn === conn) end(S.state === "ring" ? "Appel manqué" : "Appel terminé"); });
+  });
+  peer.on("call", call => {
+    if (!S || S.role !== "in" || S.state !== "connecting" || !S.stream) return call.close();
+    call.answer(S.stream); S.media = call; wire(call);
+  });
+  peer.on("disconnected", () => { try { peer.reconnect(); } catch {} });
+  peer.on("error", e => {
+    if (e.type === "unavailable-id") { say("Ce pseudo est déjà connecté (autre onglet ou appareil). Réessaie dans quelques secondes."); $("connect").disabled = false; $("connect").textContent = "Se connecter"; peer.destroy(); }
+    else if (e.type === "peer-unavailable") { if (S && S.role === "out" && S.state === "ring") end("Cet utilisateur est hors ligne"); }
+    else if (["network", "server-error", "socket-error", "socket-closed"].includes(e.type)) say("Serveur injoignable, vérifie ta connexion.");
+    else console.warn(e);
+  });
+};
+$("pseudo").addEventListener("keydown", e => { if (e.key === "Enter") $("connect").click(); });
+
+/* ---------- Appels ---------- */
+let S = null;   // appel en cours : { role, conn, name, state, stream, media, t0, timers }
+const mic = async () => {
+  try { return await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); }
+  catch (e) { throw new Error(e.name === "NotFoundError" ? "Aucun micro détecté." : "Micro refusé : autorise-le dans le navigateur."); }
+};
+function show(mode) {
+  const s = $("screen"); s.hidden = false;
+  $("cname").textContent = S.name; $("ava").textContent = (S.name[0] || "?").toUpperCase();
+  const b = $("cbtns"); b.replaceChildren();
+  const mk = (cls, txt, fn, label) => { const x = document.createElement("button"); x.className = "big " + cls; x.type = "button"; x.textContent = txt; x.setAttribute("aria-label", label); x.onclick = fn; b.append(x); return x; };
+  if (mode === "in") { $("cstat").textContent = "Appel entrant…"; $("ava").className = "ava ring"; mk("no", "✕", decline, "Refuser"); mk("ok", "✆", accept, "Répondre"); }
+  else if (mode === "out") { $("cstat").textContent = "Appel en cours…"; $("ava").className = "ava ring"; mk("no", "✕", hangup, "Annuler"); }
+  else {
+    $("ava").className = "ava";
+    const m = mk("mute", "🎤", () => { const on = m.getAttribute("aria-pressed") !== "true"; m.setAttribute("aria-pressed", on); m.textContent = on ? "🔇" : "🎤"; S.stream.getAudioTracks().forEach(t => t.enabled = !on); }, "Couper le micro");
+    mk("no", "✕", hangup, "Raccrocher");
+  }
+}
+async function call(pseudo) {
+  pseudo = pseudo.trim();
+  if (S) return;
+  if (!okPseudo(pseudo)) return say("Pseudo invalide.");
+  if (pseudo.toLowerCase() === me.toLowerCase()) return say("Tu ne peux pas t’appeler toi-même.");
+  say("");
+  let stream; try { stream = await mic(); } catch (e) { return say(e.message); }
+  const conn = peer.connect(idOf(pseudo), { reliable: true });
+  S = { role: "out", conn, name: pseudo, pid: idOf(pseudo), state: "ring", stream, timers: [] };
+  show("out"); startRing("out");
+  conn.on("open", () => conn.send({ t: "ring", name: me }));
+  conn.on("data", d => { if (S && S.conn === conn) onData(d); });
+  conn.on("close", () => { if (S && S.conn === conn && S.state !== "ending") end("Appel terminé"); });
+  S.timers.push(setTimeout(() => { if (S && S.state === "ring") { try { conn.send({ t: "hangup" }); } catch {} end("Pas de réponse"); } }, 45000));
+}
+function onData(d) {
+  if (!S || !d) return;
+  if (S.role === "out" && d.t === "accept" && S.state === "ring") {
+    S.state = "connecting"; stopRing(); $("cstat").textContent = "Connexion…";
+    S.media = peer.call(S.pid, S.stream, { metadata: { name: me } }); wire(S.media);
+  }
+  else if (d.t === "decline") end("Appel refusé");
+  else if (d.t === "busy") end("Ligne occupée");
+  else if (d.t === "hangup") end(S.state === "ring" && S.role === "in" ? "Appel manqué" : "Appel terminé");
+}
+async function accept() {
+  if (!S || S.role !== "in" || S.state !== "ring") return;
+  try { S.stream = await mic(); } catch (e) { toast(e.message); return decline(); }
+  if (!S) return;
+  S.state = "connecting"; stopRing(); $("cstat").textContent = "Connexion…"; $("ava").className = "ava";
+  S.conn.send({ t: "accept" });
+  S.timers = [setTimeout(() => { if (S && S.state === "connecting") end("Connexion impossible"); }, 20000)];
+}
+function decline() { if (!S) return; try { S.conn.send({ t: "decline" }); } catch {} end("Appel refusé"); }
+function hangup() { if (!S) return; try { S.conn.send({ t: "hangup" }); } catch {} end("Appel terminé"); }
+function wire(m) {
+  m.on("stream", rs => { if (!S || S.state === "live") return; $("remote").srcObject = rs; live(); });
+  m.on("close", () => { if (S && S.media === m) end("Appel terminé"); });
+  m.on("error", () => { if (S && S.media === m) end("Erreur de connexion audio"); });
+}
+function live() {
+  S.state = "live"; S.t0 = Date.now(); (S.timers || []).forEach(clearTimeout); show("live");
+  if (S.role === "out") { const r = JSON.parse(ls.get("call-recent", "[]")).filter(x => x !== S.name); ls.set("call-recent", JSON.stringify([S.name, ...r].slice(0, 6))); renderRecent(); }
+  const tick = () => { if (!S || !S.t0) return; const s = Math.floor((Date.now() - S.t0) / 1000); $("cstat").textContent = String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); };
+  tick(); S.timers.push(setInterval(tick, 1000));
+}
+function end(msg) {
+  const s = S; if (!s || s.state === "ending") return;
+  s.state = "ending"; S = null;
+  stopRing(); (s.timers || []).forEach(t => { clearTimeout(t); clearInterval(t); });
+  if (s.stream) s.stream.getTracks().forEach(t => t.stop());
+  try { s.media && s.media.close(); } catch {}
+  setTimeout(() => { try { s.conn.close(); } catch {} }, 300);
+  $("remote").srcObject = null;
+  $("cstat").textContent = msg; $("ava").className = "ava"; $("cbtns").replaceChildren();
+  setTimeout(() => { if (!S) $("screen").hidden = true; }, 1400);
+  if (msg === "Appel manqué") toast("Appel manqué de " + s.name);
+}
+
+/* ---------- Interface ---------- */
+$("callBtn").onclick = () => call($("target").value);
+$("target").addEventListener("keydown", e => { if (e.key === "Enter") call($("target").value); });
+function renderRecent() {
+  const list = JSON.parse(ls.get("call-recent", "[]")); $("recent").replaceChildren();
+  list.forEach(n => { const b = document.createElement("button"); b.className = "chip"; b.type = "button"; b.textContent = "📞 " + n; b.onclick = () => call(n); $("recent").append(b); });
+}
+window.addEventListener("beforeunload", () => { if (S) try { S.conn.send({ t: "hangup" }); } catch {} });
+</script>
+</body>
+</html>
