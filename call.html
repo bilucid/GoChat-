@@ -85,7 +85,7 @@ body[data-theme="classic"] #screen{background:#0f172a}
   <main>
     <section id="login" style="display:flex;flex-direction:column;gap:12px">
       <h2>Qui es-tu ?</h2>
-      <p>Choisis un pseudo : les autres t’appelleront avec. Garde cette page ouverte pour recevoir des appels.</p>
+      <p>Choisis un pseudo : une autre personne peut t'appeler avec ce pseudo, ne fermes donc pas cette page</p>
       <input id="pseudo" placeholder="Ton pseudo (3 à 20 caractères)" maxlength="20" autocomplete="username">
       <button class="cta" id="connect" type="button">Se connecter</button>
     </section>
@@ -100,14 +100,14 @@ body[data-theme="classic"] #screen{background:#0f172a}
     <div id="msg" role="alert"></div>
 
     <details id="ringBox">
-      <summary>🔔 Ma sonnerie</summary>
+      <summary>Sonnerie d'appel</summary>
       <div class="in">
         <select id="ringSel" aria-label="Sonnerie">
           <option value="classic">Classique</option>
           <option value="crystal">Cristal</option>
           <option value="retro">Rétro</option>
-          <option value="custom">Mon fichier audio</option>
-          <option value="repo">ringtone.mp3 (fichier du dépôt)</option>
+          <option value="custom">Importer un fichier...</option>
+          <option value="repo">Sonnerie officielle GoChat!</option>
         </select>
         <label class="hint" for="vol">Volume</label>
         <input id="vol" type="range" min="0.1" max="1" step="0.05" value="0.8">
