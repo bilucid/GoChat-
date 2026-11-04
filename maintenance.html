@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoChat - Maintenance</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #080d12;
+    font-family: Arial, sans-serif;
+    color: #dce8ee;
+    overflow: hidden;
+}
+
+.container {
+    text-align: center;
+    padding: 40px 25px;
+    max-width: 600px;
+    animation: appear 1s ease;
+}
+
+.icon {
+    font-size: 48px;
+    color: #64e6b2;
+    margin-bottom: 30px;
+}
+
+h1 {
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #8df5c5;
+    margin-bottom: 18px;
+}
+
+p {
+    color: #91a5b4;
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 30px;
+    padding: 11px 18px;
+    border: 1px solid #204b46;
+    border-radius: 30px;
+    color: #76e9c0;
+    font-size: 13px;
+    background: #10201f;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #64e6b2;
+    box-shadow: 0 0 10px #64e6b2;
+    animation: pulse 1.5s infinite;
+}
+
+.footer {
+    position: fixed;
+    bottom: 25px;
+    color: #40515e;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+@keyframes pulse {
+    50% { opacity: 0.3; }
+}
+
+@keyframes appear {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="icon">✳</div>
+
+    <h1>Maintenance en cours</h1>
+
+    <p>
+        Notre site est actuellement indisponible
+        le site est soit en mise à jour, soit fermé.<br>
+        Le site reviendra au plus vite.
+      Si le site est fermé, une autre page s'affichera.
+    </p>
+
+    <div class="status">
+        <span class="dot"></span>
+        Maintenance en cours
+    </div>
+</div>
+
+<div class="footer">
+    © 2026 — GoChat
+</div>
+
+</body>
+</html>
